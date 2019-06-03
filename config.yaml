@@ -1,0 +1,83 @@
+# Cryptostore sample config file
+
+# Redis or Kafka are required. They are used to batch updates from cryptofeed and the storage medium of choice
+#
+# del_after_read: (redis only) toggles the removal of data from redis after it has been processed with cryptostore.
+# start_flush: toggles if redis/kafka should be flushed at the start. Primarily for debugging, it will flush ALL of redis/kafka
+cache: redis
+
+kafka:
+    # ip/port are for the bootstrap server
+    ip: '127.0.0.1'
+    port: 9092
+    start_flush: true
+redis:
+    ip: '127.0.0.1'
+    port: 6379
+    del_after_read: true
+    start_flush: true
+
+# Data sources and data types configured under exchanges. Exchange names follow the naming scheme in cryptofeed (they
+# must be capitalized) and only exchanges supported by cryptofeed are supported.
+# data types follow cryptofeed definitions, see defines.py in cryptofeed for more details, common ones are
+# trades, l2_book, l3_book, funding, ticker (only trades, l2_book, l3_book currently supported by cryptostore).
+# Trading pairs for all exchanges (except BitMEX) follow the currency-quote format
+exchanges:
+    BITMEX:
+        l2_book: [XBTUSD]
+        trades: [XBTUSD]
+    COINBASE:
+        l2_book: [BTC-USD]
+        trades: [BTC-USD, ETH-USD, ETH-BTC]
+
+# If configured, backfill will run in a separate process (one per exchange) and
+# backfill trade data from the specifed start date, until it finds existing data
+# in the storage medium.
+backfill:
+    BITMEX:
+        XBTUSD:
+            start: '2019-05-01'
+    COINBASE:
+        BTC-USD:
+            start: '2017-01-01'
+
+# Number of levels per side to store from book updates.
+# Remove this option to store all available data.
+# Cannot enable book_depth with book_deltas
+book_depth: null
+
+# Store book deltas as opposed to complete books on every update
+# Cannot enable book deltas with book_depth (delta will be ignored if depth enabled).
+# Not all exchanges support deltas
+book_delta: True
+
+# Where to store the data. Currently arctic and parquet are supported
+storage: [arctic]
+
+
+# Parquet specific options. Parquet will default to storing the data on disk unless these are specified
+#parquet:
+    # if storing the data to an external source (like S3) toggle this to enable the removal of the local file after
+    # writing to external store
+#    del_file: true
+
+#    S3:
+        # If NULL boto will default to using ENV vars or credentials file
+        # prefix: a prefix to append to the default data path
+#        key_id: null
+#        secret: null
+#        bucket: null
+#        prefix: null
+#    GCS:
+        # path to service account key, if null will default to using env vars or auth tokens
+        # on GCE node
+        # prefix: a prefix to append to the default data path
+#        service_account: null
+#        bucket: null
+#        prefix: null
+
+# arctic specific configuration options - the mongo URL
+arctic: mongodb://127.0.0.1
+
+# Data batching window, in seconds
+storage_interval: 10
