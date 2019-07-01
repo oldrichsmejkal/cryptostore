@@ -4,10 +4,15 @@ Copyright (C) 2018-2019  Bryant Moscon - bmoscon@gmail.com
 Please see the LICENSE file for the terms and conditions
 associated with this software.
 '''
+import os
 from multiprocessing import Process
+import logging
 
 from cryptofeed import FeedHandler
 from cryptofeed.defines import TRADES, L2_BOOK, L3_BOOK, BOOK_DELTA
+
+
+LOG = logging.getLogger('cryptostore')
 
 
 class Collector(Process):
@@ -16,8 +21,10 @@ class Collector(Process):
         self.exchange_config = exchange_config
         self.config = config
         super().__init__()
+        self.daemon = True
 
     def run(self):
+        LOG.info("Collector for %s running on PID %d", self.exchange, os.getpid())
         fh = FeedHandler()
         cb = {}
         depth = None

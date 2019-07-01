@@ -10,13 +10,14 @@ A storage engine for cryptocurrency market data. You supply the exchanges, data 
 
 Stores data to:
 * Parquet
-* Arctic
+* [Arctic](https://github.com/manahl/arctic)
 * Google Cloud Storage
 * Amazon S3
+* [InfluxDB](https://github.com/influxdata/influxdb)
 
 ### Requirements
 
-Cryptostore currently requires either Kafka or Redis to be installed. The extra dependencies for your backend of choice must be installed as well (eg `pip install cryptostore[redis]`). Redis requires Redis Streams, which is supported in versions > 5.0.
+Cryptostore currently requires either Kafka or Redis to be installed. The extra dependencies for your backend of choice must be installed as well (eg `pip install cryptostore[redis]`). Redis requires Redis Streams, which is supported in versions >= 5.0.
 
 
 ### Running Cryptostore
@@ -27,7 +28,7 @@ An example [config](config.yaml), with documentation inline is provided in the r
 
 
 ### Backfilling Trade Data
-Cryptstore can backfill trade data - but be aware not all exchanges support historical trade data, and some only provide a limited amount. The backfill is not designed to be interrupted, so if it is, the backfill start date will need to be changed to the last backfilled trade date.
+Cryptstore can backfill trade data - but be aware not all exchanges support historical trade data, and some only provide a limited amount. Backfill fills from the earliest date in data storage until the start date specified in the config. Backfill is restartable.
 
 
 ### Running with other consumers
@@ -42,9 +43,11 @@ For Kafka
   - You need only supply a different consumer group id for the other consumers to ensure all consumers receive all messages. Kafka's configuration controls the removal of committed messages in a topic (typically by time or size).
 
 
+### Running in a container
+You can run Cryptostore in a docker container. A Dockerfile and a docker-compose.yml are provided. It uses the config in config-docker.yaml, and its set up to use redis and store the data into Arctic/MongoDB. The port is mapped to 37017 (as opposed to 27017) so when connecting to Arctic from outside the container make sure you specify the port. Additionally, a volume should be configured in the docker-compose so that the mongoDB data will persist across restarts.
+
 ### Planned features
 * [ ] Missing data detection and correction (for exchanges that support historical data, typically only trade data)
-* [ ] Storing data to InfluxDB
 * [ ] Storing data to MongoDB
 * [ ] Support for enabling computation and storage of diverse metrics in parallel with data collection (eg. configurable OHLCV)
 * [ ] Support for forwarding data to another service/sink (eg. to a trading engine). 
