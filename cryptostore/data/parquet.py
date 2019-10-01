@@ -51,12 +51,15 @@ class Parquet(Store):
 
         for entry in data:
             for key in entry:
-                cols[key].append(entry[key])
+                val = entry[key]
+                cols[key].append(val)
         arrays = [pa.array(cols[col]) for col in cols]
         table = pa.Table.from_arrays(arrays, names=names)
         self.data = table
 
     def write(self, exchange, data_type, pair, timestamp):
+        if not self.data:
+            return
         file_name = f'{exchange}-{data_type}-{pair}-{int(timestamp)}.parquet'
         pq.write_table(self.data, file_name)
         self.data = None

@@ -7,13 +7,15 @@ associated with this software.
 from decimal import Decimal
 from collections import defaultdict
 
-from cryptofeed.defines import TRADES, L2_BOOK, L3_BOOK
+from cryptofeed.defines import TRADES, L2_BOOK, L3_BOOK, TICKER
 import requests
 
 from cryptostore.data.store import Store
 
+
 def chunk(iterable, length):
     return (iterable[i : i + length] for i in range(0, len(iterable), length))
+
 
 class InfluxDB(Store):
     def __init__(self, config: dict):
@@ -23,13 +25,14 @@ class InfluxDB(Store):
         self.addr = f"{config.host}/write?db={config.db}"
         if 'create' in config and config.create:
             r = requests.post(f'{config.host}/query', data={'q': f'CREATE DATABASE {config.db}'})
-            if r.status_code != 200:
-                r.raise_for_status()
+            r.raise_for_status()
 
     def aggregate(self, data):
         self.data = data
 
     def write(self, exchange, data_type, pair, timestamp):
+        if not self.data:
+            return
         agg = []
         # influx cant handle duplicate data (?!) so we need to
         # incremement timestamps on data that have the same timestamp
@@ -41,6 +44,11 @@ class InfluxDB(Store):
                     ts += 1
                 used_ts[pair].add(ts)
                 agg.append(f'{data_type}-{exchange},pair={pair} side="{entry["side"]}",id="{entry["id"]}",amount={entry["amount"]},price={entry["price"]},timestamp={entry["timestamp"]} {ts}')
+        elif data_type == TICKER:
+            for entry in self.data:
+                ts = int(Decimal(entry["timestamp"]) * 1000000000)
+                agg.append(f'{data_type}-{exchange},pair={pair} bid={entry["bid"]},ask={entry["ask"]},timestamp={entry["timestamp"]} {ts}')
+
         elif data_type == L2_BOOK:
             if len(self.data):
                 ts = int(Decimal(self.data[0]["timestamp"]) * 1000000000)

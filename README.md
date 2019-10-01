@@ -1,7 +1,7 @@
 # Cryptostore
 
 [![License](https://img.shields.io/badge/license-XFree86-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.6+-green.svg)
+![Python](https://img.shields.io/badge/Python-3.7+-green.svg)
 [![PyPi](https://img.shields.io/badge/PyPi-cryptostore-brightgreen.svg)](https://pypi.python.org/pypi/cryptostore)
 
 
@@ -14,6 +14,7 @@ Stores data to:
 * Google Cloud Storage
 * Amazon S3
 * [InfluxDB](https://github.com/influxdata/influxdb)
+* Elasticsearch
 
 ### Requirements
 
@@ -42,6 +43,8 @@ For Redis
 For Kafka
   - You need only supply a different consumer group id for the other consumers to ensure all consumers receive all messages. Kafka's configuration controls the removal of committed messages in a topic (typically by time or size).
 
+With a pass through
+  - Cryptostore supports forwarding realtime data using ZeroMQ. To enable, use the `pass_through` option in the config. Data will be sent in real time (not subject to aggregation in redis/kafka). This can be used with or without data aggregation and storage.  
 
 ### Running in a container
 You can run Cryptostore in a docker container. A Dockerfile and a docker-compose.yml are provided. It uses the config in config-docker.yaml, and its set up to use redis and store the data into Arctic/MongoDB. The port is mapped to 37017 (as opposed to 27017) so when connecting to Arctic from outside the container make sure you specify the port. Additionally, a volume should be configured in the docker-compose so that the mongoDB data will persist across restarts.
@@ -50,4 +53,8 @@ You can run Cryptostore in a docker container. A Dockerfile and a docker-compose
 * [ ] Missing data detection and correction (for exchanges that support historical data, typically only trade data)
 * [ ] Storing data to MongoDB
 * [ ] Support for enabling computation and storage of diverse metrics in parallel with data collection (eg. configurable OHLCV)
-* [ ] Support for forwarding data to another service/sink (eg. to a trading engine). 
+
+
+## Contributing
+Issues and PRs are welcomed. If you'd like to discuss ongoing development please join the [slack](https://join.slack.com/t/cryptofeed-dev/shared_invite/enQtNjY4ODIwODA1MzQ3LTIzMzY3Y2YxMGVhNmQ4YzFhYTc3ODU1MjQ5MDdmY2QyZjdhMGU5ZDFhZDlmMmYzOTUzOTdkYTZiOGUwNGIzYTk)
+ (use the #cryptostore channel).

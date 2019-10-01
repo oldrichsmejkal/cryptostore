@@ -18,33 +18,34 @@ except BaseException:
 
 setup(
     name="cryptostore",
-    version="0.0.8",
+    version="0.1.1",
     author="Bryant Moscon",
     author_email="bmoscon@gmail.com",
     description=("Storage engine for cryptocurrency data"),
     long_description=ld,
     long_description_content_type='text/x-rst',
     license="XFree86",
-    keywords=["cryptocurrency", "bitcoin", "btc", "market data", "data storage", "redis", "database"],
+    keywords=["cryptocurrency", "bitcoin", "btc", "market data", "data storage", "redis", "database", "kafka"],
     url="https://github.com/bmoscon/cryptostore",
     packages=find_packages(),
     classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Programming Language :: Python :: 3.6",
+        "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3.7",
     ],
     install_requires=[
         "pandas",
-        "cryptofeed>=0.22.1",
+        "cryptofeed>=1.0.0",
         "pyyaml",
-        "pyarrow"
+        "pyarrow",
+        "aiohttp"
     ],
     extras_require={
         'redis': ['redis', 'aioredis'],
         'kafka': ['aiokafka', 'confluent-kafka'],
         'arctic': ['arctic'],
         'gcs': ['google-cloud-storage'],
-        'aws': ['boto3']
+        'aws': ['boto3'],
+        'zmq': ['pyzmq']
     },
     entry_points = {
         'console_scripts': ['cryptostore=cryptostore.bin.cryptostore:main'],
