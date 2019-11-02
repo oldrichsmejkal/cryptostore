@@ -1,0 +1,51 @@
+# Cryptostore sample config file for Docker
+
+cache: redis
+
+redis:
+    ip: redisdb
+    port: 6379
+    del_after_read: true
+    start_flush: true
+
+exchanges:
+    BITMEX:
+        l2_book:
+            symbols: [XBTUSD]
+            book_depth: 10
+        trades: [XBTUSD]
+    COINBASE:
+        l3_book:
+            symbols: [BTC-USD, ETH-USD]
+            book_delta: true
+            book_interval: 10000
+        trades: [BTC-USD, ETH-USD, ETH-BTC]
+
+storage: [timescaldb]
+timescaldb:
+    connection_string: postgresql://username:password@127.0.0.1:5432/dbname?connect_timeout=10
+
+
+storage_interval: 60
+
+plugins:
+  backfill:
+    module: [cryptostore.plugin.backfill, Backfill]
+    config: config.yaml
+
+backfill:
+    COINBASE:
+        BTC-USD:
+            start: '2017-01-01'
+    BITFINEX:
+        BTC-USD:
+            start: '2016-01-01'
+        ETH-USD:
+            start: '2016-01-01'
+        ETH-BTC:
+            start: '2016-01-01'
+    BITMEX:
+        XTBTUSD:
+            start: '2017-01-01'
+        ETHUSD:
+            start: '2017-01-01'01'

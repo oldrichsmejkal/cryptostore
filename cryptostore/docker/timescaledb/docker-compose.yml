@@ -1,0 +1,70 @@
+version: "3.7"
+services:
+  cryptostore:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "2000k"
+        max-file: "10"
+    build:
+      context: .
+      dockerfile: Dockerfile
+  redisdb:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "2000k"
+        max-file: "10"
+    image: redis:5.0.5
+    networks:
+      - cryptostore
+    expose:
+      - 6379
+    command: ["redis-server", "--save", "''", "--appendonly", "no"]
+  timescaledb:
+    container_name: timescaledb
+    image: timescale/timescaledb:latest-pg11
+    environment:
+      - POSTGRES_USER=testUser
+      - POSTGRES_PASSWORD=pwd0123456789
+      - POSTGRES_DB=mydb
+    volumes:
+        - timescaledb-data:/var/lib/postgresql/data
+    ports:
+        - "5432:5432"
+    networks:
+      - cryptostore
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    volumes:
+       - pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - cryptostore
+    restart: unless-stopped
+  pgweb:
+    container_name: pgweb  # optional
+    restart: always  # optional
+    image: sosedoff/pgweb
+    ports: 
+      - "8081:8081"
+    networks:
+      - cryptostore
+    links: 
+      - timescaledb:timescaledb  # my database container is called postgres, not db
+    environment:
+      - DATABASE_URL=postgres://testUser:pwd0123456789@timescaledb:5432/mydb?sslmode=disable
+    depends_on:
+      - timescaledb  # my database container is called postgres, not db
+volumes:
+  timescaledb-data:
+    driver: local
+  pgadmin:
+    driver: local
+networks:
+  cryptostore:

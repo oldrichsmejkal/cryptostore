@@ -15,7 +15,8 @@ kafka:
     start_flush: true
 redis:
     ip: '127.0.0.1'
-    port: 6379
+    port: 6380
+    
     socket: null
     del_after_read: true
     retention_time: null
@@ -40,23 +41,22 @@ exchanges:
     BITMEX:
         retries: -1
         l2_book:
-            symbols: [XBTUSD]
-            max_depth: 10
-            book_delta: true
-        trades: [XBTUSD]
-        ticker: [XBTUSD]
-    COINBASE:
+            symbols: [XBTUSD,ETHUSD]
+            max_depth: 1
+            book_delta: false
+        trades: [XBTUSD,ETHUSD]
+        ticker: [XBTUSD,ETHUSD]
+    BITFINEX:
         retries: -1
-        l3_book:
-            symbols: [BTC-USD, ETH-USD]
-            book_delta: true
-            book_interval: 10000
+        l2_book:
+            symbols: [BTC-USD, ETH-USD, ETH-BTC]
+            max_depth: 1
+            book_delta: false
         trades: [BTC-USD, ETH-USD, ETH-BTC]
-        ticker: [BTC-USD]
 
 
-# Where to store the data. Currently arctic, influx, elastic, and parquet are supported. More than one can be enabled
-storage: [arctic, influx]
+# Where to store the data. Currently arctic, influx, elastic, parquet and timescaledb are supported. More than one can be enabled
+storage: [influx]
 
 # Configurable passthrough for data - data will be sent in realtime (no aggregation in redis)
 pass_through:
@@ -75,7 +75,7 @@ elastic:
 
 influx:
     host: 'http://127.0.0.1:8086'
-    db: example
+    db: crypto
     create: true
 
 # Parquet specific options. Parquet will default to storing the data on disk unless these are specified
@@ -102,23 +102,39 @@ parquet:
 # arctic specific configuration options - the mongo URL
 arctic: mongodb://127.0.0.1
 
+# timescaledb specific configuration option
+timescaldb:
+    connection_string: postgresql://username:password@127.0.0.1:5432/dbname?connect_timeout=10
+
 # Data batching window, in seconds
 storage_interval: 60
 
 
 # Cryptostore Plugin Interface
 plugins:
-    backfill:
+    #backfill:
         # The import path, and class name
         # from cryptostore.plugin.backfill import Backfill
-        module: [cryptostore.plugin.backfill, Backfill]
+        #module: [cryptostore.plugin.backfill, Backfill]
         # Config path, config can be added to this file, or in a separate config
         # backfill does not use a dynamic config, so its fine to put its config here
-        config: config.yaml
+        #config: config.yaml
 
 # If configured, backfill will run in a separate process and
 # backfill trade data from earliest data (in storage) up to `start` (inclusive).
 backfill:
     COINBASE:
         BTC-USD:
+            start: '2017-01-01'
+    BITFINEX:
+        BTC-USD:
+            start: '2016-01-01'
+        ETH-USD:
+            start: '2016-01-01'
+        ETH-BTC:
+            start: '2016-01-01'
+    BITMEX:
+        XTBTUSD:
+            start: '2017-01-01'
+        ETHUSD:
             start: '2017-01-01'
